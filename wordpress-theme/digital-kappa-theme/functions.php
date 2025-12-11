@@ -17,6 +17,151 @@ define('DK_THEME_URI', get_template_directory_uri());
 
 /**
  * ==========================================================================
+ * Auto-create Pages on Theme Activation
+ * ==========================================================================
+ */
+function dk_create_pages_on_activation() {
+    // Define pages to create
+    $pages = array(
+        array(
+            'title'    => 'Accueil',
+            'slug'     => 'accueil',
+            'template' => 'templates/template-home.php',
+            'content'  => '<!-- Page d\'accueil - Le contenu est généré par le template -->',
+        ),
+        array(
+            'title'    => 'FAQ',
+            'slug'     => 'faq',
+            'template' => 'templates/template-faq.php',
+            'content'  => '<!-- FAQ - Le contenu est généré par le template -->',
+        ),
+        array(
+            'title'    => 'Comment ça marche',
+            'slug'     => 'comment-ca-marche',
+            'template' => 'templates/template-how-it-works.php',
+            'content'  => '<!-- Comment ça marche - Le contenu est généré par le template -->',
+        ),
+        array(
+            'title'    => 'À propos',
+            'slug'     => 'a-propos',
+            'template' => 'templates/template-about.php',
+            'content'  => '<!-- À propos - Le contenu est généré par le template -->',
+        ),
+        array(
+            'title'    => 'Conditions Générales de Vente',
+            'slug'     => 'cgv',
+            'template' => 'templates/template-cgv.php',
+            'content'  => '<!-- CGV - Le contenu est généré par le template -->',
+        ),
+        array(
+            'title'    => 'Mentions Légales',
+            'slug'     => 'mentions-legales',
+            'template' => 'templates/template-legal-notice.php',
+            'content'  => '<!-- Mentions légales - Le contenu est généré par le template -->',
+        ),
+        array(
+            'title'    => 'Politique de Confidentialité',
+            'slug'     => 'politique-de-confidentialite',
+            'template' => 'templates/template-privacy.php',
+            'content'  => '<!-- Politique de confidentialité - Le contenu est généré par le template -->',
+        ),
+    );
+
+    foreach ($pages as $page_data) {
+        // Check if page already exists
+        $existing_page = get_page_by_path($page_data['slug']);
+
+        if (!$existing_page) {
+            // Create the page
+            $page_id = wp_insert_post(array(
+                'post_title'     => $page_data['title'],
+                'post_name'      => $page_data['slug'],
+                'post_content'   => $page_data['content'],
+                'post_status'    => 'publish',
+                'post_type'      => 'page',
+                'post_author'    => 1,
+                'comment_status' => 'closed',
+            ));
+
+            // Set the page template
+            if ($page_id && !is_wp_error($page_id)) {
+                update_post_meta($page_id, '_wp_page_template', $page_data['template']);
+            }
+        } else {
+            // Page exists, just update the template if not set
+            $current_template = get_post_meta($existing_page->ID, '_wp_page_template', true);
+            if (empty($current_template) || $current_template === 'default') {
+                update_post_meta($existing_page->ID, '_wp_page_template', $page_data['template']);
+            }
+        }
+    }
+
+    // Set the homepage
+    $home_page = get_page_by_path('accueil');
+    if ($home_page) {
+        update_option('show_on_front', 'page');
+        update_option('page_on_front', $home_page->ID);
+    }
+}
+add_action('after_switch_theme', 'dk_create_pages_on_activation');
+
+// Also provide a manual way to create pages via admin
+function dk_add_setup_menu() {
+    add_theme_page(
+        'Configuration Digital Kappa',
+        'Config. DK',
+        'manage_options',
+        'dk-setup',
+        'dk_setup_page'
+    );
+}
+add_action('admin_menu', 'dk_add_setup_menu');
+
+function dk_setup_page() {
+    // Handle form submission
+    if (isset($_POST['dk_create_pages']) && check_admin_referer('dk_create_pages_nonce')) {
+        dk_create_pages_on_activation();
+        echo '<div class="notice notice-success"><p>Les pages ont été créées avec succès !</p></div>';
+    }
+    ?>
+    <div class="wrap">
+        <h1>Configuration Digital Kappa</h1>
+        <div class="card" style="max-width: 600px; padding: 20px;">
+            <h2>Créer les pages du thème</h2>
+            <p>Cliquez sur le bouton ci-dessous pour créer automatiquement toutes les pages nécessaires au thème :</p>
+            <ul style="list-style: disc; margin-left: 20px;">
+                <li>Accueil (page d'accueil)</li>
+                <li>FAQ</li>
+                <li>Comment ça marche</li>
+                <li>À propos</li>
+                <li>CGV (Conditions Générales de Vente)</li>
+                <li>Mentions Légales</li>
+                <li>Politique de Confidentialité</li>
+            </ul>
+            <form method="post">
+                <?php wp_nonce_field('dk_create_pages_nonce'); ?>
+                <p>
+                    <input type="submit" name="dk_create_pages" class="button button-primary" value="Créer les pages">
+                </p>
+            </form>
+        </div>
+
+        <div class="card" style="max-width: 600px; padding: 20px; margin-top: 20px;">
+            <h2>Prochaines étapes</h2>
+            <ol>
+                <li><strong>Installer WooCommerce</strong> si ce n'est pas déjà fait</li>
+                <li><strong>Configurer Stripe</strong> : Voir le fichier STRIPE-SETUP.md dans le thème</li>
+                <li><strong>Créer des produits</strong> téléchargeables dans WooCommerce</li>
+                <li><strong>Configurer les menus</strong> dans Apparence > Menus</li>
+            </ol>
+        </div>
+    </div>
+    <?php
+}
+
+
+/**
+ * ==========================================================================
  * Theme Setup
  * ==========================================================================
  */

@@ -10,6 +10,15 @@ get_header();
 ?>
 
 <main id="primary" class="dk-main dk-legal">
+    <?php
+    // If built with Elementor, use the_content()
+    if (dk_is_elementor_page()) :
+        while (have_posts()) :
+            the_post();
+            the_content();
+        endwhile;
+    else :
+    ?>
     <!-- Hero Section -->
     <section class="dk-page-hero dk-bg-gray">
         <div class="dk-container">
@@ -261,6 +270,7 @@ get_header();
             </div>
         </div>
     </section>
+    <?php endif; // End else (non-Elementor content) ?>
 </main>
 
 <?php

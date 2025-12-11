@@ -10,6 +10,26 @@ get_header();
 ?>
 
 <main id="primary" class="dk-main dk-home">
+    <?php
+    // If built with Elementor, use the_content()
+    if (dk_is_elementor_page()) :
+        while (have_posts()) :
+            the_post();
+            the_content();
+        endwhile;
+    else :
+        // Default content for non-Elementor pages
+
+        // Get shop URL safely
+        $shop_url = home_url('/boutique/');
+        if (function_exists('wc_get_page_id')) {
+            $shop_page_id = wc_get_page_id('shop');
+            if ($shop_page_id > 0) {
+                $shop_url = get_permalink($shop_page_id);
+            }
+        }
+    ?>
+
     <!-- Hero Section -->
     <section class="dk-hero dk-bg-gray">
         <div class="dk-hero-container">
@@ -31,7 +51,7 @@ get_header();
                     </p>
 
                     <div class="dk-hero-buttons">
-                        <a href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>" class="dk-btn dk-btn-primary">
+                        <a href="<?php echo esc_url($shop_url); ?>" class="dk-btn dk-btn-primary">
                             <?php esc_html_e('Explorer les produits', 'digital-kappa'); ?>
                         </a>
                         <a href="<?php echo esc_url(home_url('/comment-ca-marche/')); ?>" class="dk-btn dk-btn-secondary">
@@ -47,15 +67,7 @@ get_header();
                     <!-- Large Card -->
                     <div class="dk-hero-card dk-hero-card-large">
                         <div class="dk-hero-card-image">
-                            <?php
-                            $featured_cat = get_term_by('slug', 'application', 'product_cat');
-                            $cat_thumbnail = get_term_meta($featured_cat->term_id, 'thumbnail_id', true);
-                            if ($cat_thumbnail) :
-                                echo wp_get_attachment_image($cat_thumbnail, 'medium_large');
-                            else :
-                                ?>
-                                <div class="dk-hero-card-placeholder"></div>
-                            <?php endif; ?>
+                            <div class="dk-hero-card-placeholder"></div>
                             <div class="dk-hero-card-overlay"></div>
                             <div class="dk-badge dk-badge-gold dk-hero-card-badge"><?php esc_html_e('Populaire', 'digital-kappa'); ?></div>
                             <div class="dk-hero-card-info">
@@ -160,45 +172,65 @@ get_header();
 
             <div class="dk-products-grid">
                 <?php
-                $featured_products = wc_get_products(array(
-                    'limit'    => 3,
-                    'featured' => true,
-                    'status'   => 'publish',
-                    'orderby'  => 'date',
-                    'order'    => 'DESC',
-                ));
-
-                if (empty($featured_products)) {
+                if (function_exists('wc_get_products')) {
                     $featured_products = wc_get_products(array(
-                        'limit'   => 3,
-                        'status'  => 'publish',
-                        'orderby' => 'date',
-                        'order'   => 'DESC',
+                        'limit'    => 3,
+                        'featured' => true,
+                        'status'   => 'publish',
+                        'orderby'  => 'date',
+                        'order'    => 'DESC',
                     ));
-                }
 
-                foreach ($featured_products as $product) :
+                    if (empty($featured_products)) {
+                        $featured_products = wc_get_products(array(
+                            'limit'   => 3,
+                            'status'  => 'publish',
+                            'orderby' => 'date',
+                            'order'   => 'DESC',
+                        ));
+                    }
+
+                    foreach ($featured_products as $product) :
+                        ?>
+                        <div class="dk-product-card dk-hover-lift">
+                            <div class="dk-product-image">
+                                <?php echo $product->get_image('dk-product-card'); ?>
+                            </div>
+                            <div class="dk-product-content">
+                                <h3 class="dk-product-title"><?php echo esc_html($product->get_name()); ?></h3>
+                                <p class="dk-product-price"><?php echo $product->get_price_html(); ?></p>
+                                <a href="<?php echo esc_url($product->get_permalink()); ?>" class="dk-product-link">
+                                    <?php esc_html_e('Voir le produit', 'digital-kappa'); ?>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="dk-icon-arrow">
+                                        <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    <?php endforeach;
+                } else {
+                    // WooCommerce not installed - show placeholder
+                    for ($i = 0; $i < 3; $i++) :
                     ?>
-                    <div class="dk-product-card dk-hover-lift">
-                        <div class="dk-product-image">
-                            <?php echo $product->get_image('dk-product-card'); ?>
+                        <div class="dk-product-card dk-hover-lift">
+                            <div class="dk-product-image">
+                                <div class="dk-product-placeholder"></div>
+                            </div>
+                            <div class="dk-product-content">
+                                <h3 class="dk-product-title"><?php esc_html_e('Produit exemple', 'digital-kappa'); ?></h3>
+                                <p class="dk-product-price">€29.99</p>
+                                <span class="dk-product-link">
+                                    <?php esc_html_e('Installer WooCommerce', 'digital-kappa'); ?>
+                                </span>
+                            </div>
                         </div>
-                        <div class="dk-product-content">
-                            <h3 class="dk-product-title"><?php echo esc_html($product->get_name()); ?></h3>
-                            <p class="dk-product-price"><?php echo $product->get_price_html(); ?></p>
-                            <a href="<?php echo esc_url($product->get_permalink()); ?>" class="dk-product-link">
-                                <?php esc_html_e('Voir le produit', 'digital-kappa'); ?>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="dk-icon-arrow">
-                                    <polyline points="9 18 15 12 9 6"></polyline>
-                                </svg>
-                            </a>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+                    <?php endfor;
+                }
+                ?>
             </div>
 
             <div class="dk-text-center dk-mt-8">
-                <a href="<?php echo esc_url(get_permalink(wc_get_page_id('shop'))); ?>" class="dk-btn dk-btn-primary">
+                <a href="<?php echo esc_url($shop_url); ?>" class="dk-btn dk-btn-primary">
                     <?php esc_html_e('Voir tous les produits', 'digital-kappa'); ?>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="dk-icon-arrow">
                         <polyline points="9 18 15 12 9 6"></polyline>
@@ -338,6 +370,7 @@ get_header();
     <!-- CTA Section -->
     <?php echo do_shortcode('[dk_cta]'); ?>
 
+    <?php endif; // End else (non-Elementor content) ?>
 </main>
 
 <?php

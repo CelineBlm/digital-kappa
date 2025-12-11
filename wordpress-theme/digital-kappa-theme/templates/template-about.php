@@ -10,6 +10,15 @@ get_header();
 ?>
 
 <main id="primary" class="dk-main dk-about">
+    <?php
+    // If built with Elementor, use the_content()
+    if (dk_is_elementor_page()) :
+        while (have_posts()) :
+            the_post();
+            the_content();
+        endwhile;
+    else :
+    ?>
     <!-- Hero Section -->
     <section class="dk-about-hero dk-section">
         <div class="dk-container">
@@ -232,6 +241,7 @@ get_header();
     <!-- CTA -->
     <?php echo do_shortcode('[dk_cta title="Prêt à découvrir nos produits ?" description="Rejoignez la communauté Digital Kappa et accélérez vos projets" btn_text="Explorer le catalogue"]'); ?>
 
+    <?php endif; // End else (non-Elementor content) ?>
 </main>
 
 <?php

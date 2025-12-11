@@ -16,6 +16,27 @@ define('DK_THEME_DIR', get_template_directory());
 define('DK_THEME_URI', get_template_directory_uri());
 
 /**
+ * Check if current page is built with Elementor
+ */
+function dk_is_elementor_page() {
+    if (!defined('ELEMENTOR_VERSION')) {
+        return false;
+    }
+
+    $post_id = get_the_ID();
+    if (!$post_id) {
+        return false;
+    }
+
+    $document = \Elementor\Plugin::$instance->documents->get($post_id);
+    if (!$document) {
+        return false;
+    }
+
+    return $document->is_built_with_elementor();
+}
+
+/**
  * ==========================================================================
  * Auto-create Pages on Theme Activation
  * ==========================================================================

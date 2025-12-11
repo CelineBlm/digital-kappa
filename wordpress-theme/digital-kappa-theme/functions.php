@@ -256,6 +256,9 @@ add_filter('body_class', 'dk_body_classes');
  * ==========================================================================
  */
 
+// Only load WooCommerce customizations if WooCommerce is active
+if (class_exists('WooCommerce')) {
+
 // Remove default WooCommerce styles
 add_filter('woocommerce_enqueue_styles', '__return_empty_array');
 
@@ -390,6 +393,8 @@ function dk_auto_complete_virtual_orders($order_id) {
 }
 add_action('woocommerce_thankyou', 'dk_auto_complete_virtual_orders');
 add_action('woocommerce_payment_complete', 'dk_auto_complete_virtual_orders');
+
+} // End if (class_exists('WooCommerce'))
 
 /**
  * ==========================================================================

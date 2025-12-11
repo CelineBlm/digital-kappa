@@ -108,9 +108,18 @@
  * Default menu fallback
  */
 function dk_default_menu() {
+    // Get shop URL - check if WooCommerce is active
+    $shop_url = home_url('/boutique/');
+    if (function_exists('wc_get_page_id')) {
+        $shop_page_id = wc_get_page_id('shop');
+        if ($shop_page_id > 0) {
+            $shop_url = get_permalink($shop_page_id);
+        }
+    }
+
     $menu_items = array(
         array('title' => __('Accueil', 'digital-kappa'), 'url' => home_url('/'), 'class' => ''),
-        array('title' => __('Tous nos produits', 'digital-kappa'), 'url' => get_permalink(wc_get_page_id('shop')), 'class' => ''),
+        array('title' => __('Tous nos produits', 'digital-kappa'), 'url' => $shop_url, 'class' => ''),
         array('title' => __('Ebooks', 'digital-kappa'), 'url' => home_url('/categorie-produit/ebook/'), 'class' => ''),
         array('title' => __('Applications', 'digital-kappa'), 'url' => home_url('/categorie-produit/application/'), 'class' => ''),
         array('title' => __('Templates', 'digital-kappa'), 'url' => home_url('/categorie-produit/template/'), 'class' => ''),
@@ -120,7 +129,8 @@ function dk_default_menu() {
 
     echo '<ul class="dk-nav-menu">';
     foreach ($menu_items as $item) {
-        $active_class = is_page($item['title']) || (is_shop() && $item['title'] === __('Tous nos produits', 'digital-kappa')) ? 'current-menu-item' : '';
+        $is_shop_page = function_exists('is_shop') && is_shop();
+        $active_class = is_page($item['title']) || ($is_shop_page && $item['title'] === __('Tous nos produits', 'digital-kappa')) ? 'current-menu-item' : '';
         echo '<li class="menu-item ' . esc_attr($active_class) . '">';
         echo '<a href="' . esc_url($item['url']) . '">' . esc_html($item['title']) . '</a>';
         echo '</li>';

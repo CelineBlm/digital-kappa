@@ -41,6 +41,10 @@ function dk_is_elementor_page() {
  * Auto-create Pages on Theme Activation
  * ==========================================================================
  */
+
+// Include page content file
+require_once DK_THEME_DIR . '/inc/page-content.php';
+
 function dk_create_pages_on_activation() {
     // Define pages to create
     $pages = array(
@@ -48,43 +52,36 @@ function dk_create_pages_on_activation() {
             'title'    => 'Accueil',
             'slug'     => 'accueil',
             'template' => 'templates/template-home.php',
-            'content'  => '<!-- Page d\'accueil - Le contenu est généré par le template -->',
         ),
         array(
             'title'    => 'FAQ',
             'slug'     => 'faq',
             'template' => 'templates/template-faq.php',
-            'content'  => '<!-- FAQ - Le contenu est généré par le template -->',
         ),
         array(
             'title'    => 'Comment ça marche',
             'slug'     => 'comment-ca-marche',
             'template' => 'templates/template-how-it-works.php',
-            'content'  => '<!-- Comment ça marche - Le contenu est généré par le template -->',
         ),
         array(
             'title'    => 'À propos',
             'slug'     => 'a-propos',
             'template' => 'templates/template-about.php',
-            'content'  => '<!-- À propos - Le contenu est généré par le template -->',
         ),
         array(
             'title'    => 'Conditions Générales de Vente',
             'slug'     => 'cgv',
             'template' => 'templates/template-cgv.php',
-            'content'  => '<!-- CGV - Le contenu est généré par le template -->',
         ),
         array(
             'title'    => 'Mentions Légales',
             'slug'     => 'mentions-legales',
             'template' => 'templates/template-legal-notice.php',
-            'content'  => '<!-- Mentions légales - Le contenu est généré par le template -->',
         ),
         array(
             'title'    => 'Politique de Confidentialité',
             'slug'     => 'politique-de-confidentialite',
             'template' => 'templates/template-privacy.php',
-            'content'  => '<!-- Politique de confidentialité - Le contenu est généré par le template -->',
         ),
     );
 
@@ -92,12 +89,15 @@ function dk_create_pages_on_activation() {
         // Check if page already exists
         $existing_page = get_page_by_path($page_data['slug']);
 
+        // Get the HTML content for this page
+        $page_content = dk_get_page_content($page_data['slug']);
+
         if (!$existing_page) {
-            // Create the page
+            // Create the page with actual content
             $page_id = wp_insert_post(array(
                 'post_title'     => $page_data['title'],
                 'post_name'      => $page_data['slug'],
-                'post_content'   => $page_data['content'],
+                'post_content'   => $page_content,
                 'post_status'    => 'publish',
                 'post_type'      => 'page',
                 'post_author'    => 1,
@@ -109,7 +109,16 @@ function dk_create_pages_on_activation() {
                 update_post_meta($page_id, '_wp_page_template', $page_data['template']);
             }
         } else {
-            // Page exists, just update the template if not set
+            // Page exists - update content if it's empty or just a comment
+            $current_content = $existing_page->post_content;
+            if (empty($current_content) || strpos($current_content, '<!-- ') === 0) {
+                wp_update_post(array(
+                    'ID' => $existing_page->ID,
+                    'post_content' => $page_content,
+                ));
+            }
+
+            // Update template if not set
             $current_template = get_post_meta($existing_page->ID, '_wp_page_template', true);
             if (empty($current_template) || $current_template === 'default') {
                 update_post_meta($existing_page->ID, '_wp_page_template', $page_data['template']);
@@ -173,11 +182,50 @@ function dk_admin_notice_setup() {
 }
 add_action('admin_notices', 'dk_admin_notice_setup');
 
+/**
+ * Force update page content from page-content.php
+ */
+function dk_force_update_pages_content() {
+    $pages_to_update = array(
+        'accueil' => 'Accueil',
+        'faq' => 'FAQ',
+        'comment-ca-marche' => 'Comment ça marche',
+        'a-propos' => 'À propos',
+        'cgv' => 'CGV',
+        'mentions-legales' => 'Mentions Légales',
+        'politique-de-confidentialite' => 'Politique de Confidentialité',
+    );
+
+    $updated_count = 0;
+
+    foreach ($pages_to_update as $slug => $title) {
+        $page = get_page_by_path($slug);
+        if ($page) {
+            $page_content = dk_get_page_content($slug);
+            if (!empty($page_content)) {
+                wp_update_post(array(
+                    'ID' => $page->ID,
+                    'post_content' => $page_content,
+                ));
+                $updated_count++;
+            }
+        }
+    }
+
+    return $updated_count;
+}
+
 function dk_setup_page() {
-    // Handle form submission
+    // Handle form submission - Create pages
     if (isset($_POST['dk_create_pages']) && check_admin_referer('dk_create_pages_nonce')) {
         dk_create_pages_on_activation();
         echo '<div class="notice notice-success"><p>Les pages ont été créées avec succès !</p></div>';
+    }
+
+    // Handle form submission - Force update content
+    if (isset($_POST['dk_force_update_content']) && check_admin_referer('dk_force_update_nonce')) {
+        $count = dk_force_update_pages_content();
+        echo '<div class="notice notice-success"><p>' . sprintf(__('%d pages ont été mises à jour avec le contenu par défaut. Vous pouvez maintenant les modifier avec Elementor !', 'digital-kappa'), $count) . '</p></div>';
     }
     ?>
     <div class="wrap">
@@ -198,6 +246,19 @@ function dk_setup_page() {
                 <?php wp_nonce_field('dk_create_pages_nonce'); ?>
                 <p>
                     <input type="submit" name="dk_create_pages" class="button button-primary" value="Créer les pages">
+                </p>
+            </form>
+        </div>
+
+        <div class="card" style="max-width: 600px; padding: 20px; margin-top: 20px; background: #fff8e1; border-left: 4px solid #d2a30b;">
+            <h2 style="color: #d2a30b;">⚡ Réinitialiser le contenu des pages</h2>
+            <p><strong>Important pour l'édition avec Elementor !</strong></p>
+            <p>Si vos pages apparaissent vides dans Elementor, utilisez ce bouton pour insérer le contenu par défaut dans WordPress. Ensuite, vous pourrez modifier ce contenu avec Elementor.</p>
+            <p style="color: #666; font-size: 12px;">⚠️ Attention : Cette action remplacera le contenu actuel des pages par le contenu par défaut du thème.</p>
+            <form method="post">
+                <?php wp_nonce_field('dk_force_update_nonce'); ?>
+                <p>
+                    <input type="submit" name="dk_force_update_content" class="button button-primary" value="Réinitialiser le contenu des pages" onclick="return confirm('Êtes-vous sûr ? Le contenu actuel des pages sera remplacé par le contenu par défaut.');">
                 </p>
             </form>
         </div>

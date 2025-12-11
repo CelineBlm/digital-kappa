@@ -117,6 +117,41 @@ function dk_add_setup_menu() {
 }
 add_action('admin_menu', 'dk_add_setup_menu');
 
+// Show admin notice if pages are not created
+function dk_admin_notice_setup() {
+    // Check if home page exists
+    $home_page = get_page_by_path('accueil');
+
+    // Don't show if pages already exist
+    if ($home_page) {
+        return;
+    }
+
+    // Don't show on the setup page itself
+    if (isset($_GET['page']) && $_GET['page'] === 'dk-setup') {
+        return;
+    }
+
+    // Handle auto-create from notice
+    if (isset($_GET['dk_auto_create']) && $_GET['dk_auto_create'] === '1' && check_admin_referer('dk_auto_create_pages')) {
+        dk_create_pages_on_activation();
+        echo '<div class="notice notice-success is-dismissible"><p><strong>Digital Kappa :</strong> Les pages ont été créées avec succès ! <a href="' . admin_url('edit.php?post_type=page') . '">Voir les pages</a></p></div>';
+        return;
+    }
+
+    $create_url = wp_nonce_url(admin_url('?dk_auto_create=1'), 'dk_auto_create_pages');
+    ?>
+    <div class="notice notice-warning">
+        <p>
+            <strong>Digital Kappa :</strong> Les pages du thème n'ont pas encore été créées.
+            <a href="<?php echo esc_url($create_url); ?>" class="button button-primary" style="margin-left: 10px;">Créer les pages maintenant</a>
+            <a href="<?php echo admin_url('themes.php?page=dk-setup'); ?>" class="button" style="margin-left: 5px;">Configuration avancée</a>
+        </p>
+    </div>
+    <?php
+}
+add_action('admin_notices', 'dk_admin_notice_setup');
+
 function dk_setup_page() {
     // Handle form submission
     if (isset($_POST['dk_create_pages']) && check_admin_referer('dk_create_pages_nonce')) {

@@ -1,0 +1,707 @@
+/*
+Theme Name: Digital Kappa
+Theme URI: https://digitalkappa.com
+Author: Digital Kappa
+Author URI: https://digitalkappa.com
+Description: Thème WooCommerce pour la marketplace de produits digitaux Digital Kappa. Compatible avec Elementor, optimisé pour les produits dématérialisés avec paiement Stripe et livraison par email.
+Version: 1.0.0
+Requires at least: 6.0
+Requires PHP: 8.0
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: digital-kappa
+Tags: e-commerce, woocommerce, elementor, digital-products, marketplace
+WooCommerce: 8.0
+*/
+
+/* ==========================================================================
+   CSS Variables - Design System Digital Kappa
+   ========================================================================== */
+
+:root {
+    /* Primary Colors */
+    --dk-gold: #d2a30b;
+    --dk-gold-hover: #b8900a;
+    --dk-gold-light: rgba(210, 163, 11, 0.1);
+    --dk-gold-bg: #fffbf0;
+
+    /* Neutral Colors */
+    --dk-black: #000000;
+    --dk-dark: #1a1a1a;
+    --dk-dark-bg: #2b2d31;
+    --dk-dark-card: #2c3340;
+    --dk-text-primary: #0d1421;
+    --dk-text-secondary: #4a5565;
+    --dk-text-muted: #6a7282;
+    --dk-text-light: #99a1af;
+    --dk-text-lighter: rgba(13, 20, 33, 0.7);
+
+    /* Gray Scale */
+    --dk-gray-50: #f9fafb;
+    --dk-gray-100: #f0f2f5;
+    --dk-gray-200: #d1d5dc;
+    --dk-gray-300: #cbced4;
+    --dk-gray-400: #9ca3af;
+    --dk-gray-500: #6b7280;
+    --dk-gray-600: #4b5563;
+    --dk-gray-700: #374151;
+
+    /* Background Colors */
+    --dk-bg-white: #ffffff;
+    --dk-bg-light: #f9fafb;
+    --dk-bg-gray: #f0f2f5;
+
+    /* Border Colors */
+    --dk-border-light: #f0f2f5;
+    --dk-border: #d1d5dc;
+    --dk-border-dark: rgba(0, 0, 0, 0.1);
+
+    /* Category Colors */
+    --dk-blue: #155DFC;
+    --dk-blue-bg: #eff6ff;
+    --dk-green: #00A63E;
+    --dk-green-bg: #f0fdf4;
+    --dk-purple: #9810FA;
+    --dk-purple-bg: #faf5ff;
+
+    /* Status Colors */
+    --dk-error: #d4183d;
+    --dk-success: #00A63E;
+
+    /* Typography */
+    --dk-font-serif: 'Merriweather', Georgia, 'Times New Roman', serif;
+    --dk-font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+    /* Font Sizes */
+    --dk-text-xs: 0.75rem;     /* 12px */
+    --dk-text-sm: 0.875rem;    /* 14px */
+    --dk-text-base: 1rem;      /* 16px */
+    --dk-text-lg: 1.125rem;    /* 18px */
+    --dk-text-xl: 1.25rem;     /* 20px */
+    --dk-text-2xl: 1.5rem;     /* 24px */
+    --dk-text-3xl: 1.875rem;   /* 30px */
+    --dk-text-4xl: 2.25rem;    /* 36px */
+    --dk-text-5xl: 3rem;       /* 48px */
+
+    /* Font Weights */
+    --dk-font-normal: 400;
+    --dk-font-medium: 500;
+    --dk-font-semibold: 600;
+    --dk-font-bold: 700;
+
+    /* Line Heights */
+    --dk-leading-tight: 1.25;
+    --dk-leading-normal: 1.5;
+    --dk-leading-relaxed: 1.625;
+
+    /* Spacing */
+    --dk-space-1: 0.25rem;     /* 4px */
+    --dk-space-2: 0.5rem;      /* 8px */
+    --dk-space-3: 0.75rem;     /* 12px */
+    --dk-space-4: 1rem;        /* 16px */
+    --dk-space-5: 1.25rem;     /* 20px */
+    --dk-space-6: 1.5rem;      /* 24px */
+    --dk-space-8: 2rem;        /* 32px */
+    --dk-space-10: 2.5rem;     /* 40px */
+    --dk-space-12: 3rem;       /* 48px */
+    --dk-space-16: 4rem;       /* 64px */
+    --dk-space-20: 5rem;       /* 80px */
+
+    /* Border Radius */
+    --dk-rounded-sm: 0.375rem;  /* 6px */
+    --dk-rounded: 0.5rem;       /* 8px */
+    --dk-rounded-lg: 0.625rem;  /* 10px */
+    --dk-rounded-xl: 0.875rem;  /* 14px */
+    --dk-rounded-2xl: 1rem;     /* 16px */
+    --dk-rounded-3xl: 1.5rem;   /* 24px */
+    --dk-rounded-full: 9999px;
+
+    /* Shadows */
+    --dk-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --dk-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --dk-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --dk-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --dk-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    --dk-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+    /* Transitions */
+    --dk-transition-fast: 150ms ease;
+    --dk-transition: 200ms ease;
+    --dk-transition-slow: 300ms ease;
+    --dk-transition-slower: 500ms ease;
+
+    /* Container */
+    --dk-container-max: 80rem;  /* 1280px */
+    --dk-container-padding: 1rem;
+    --dk-container-padding-lg: 5rem; /* 80px - lg:px-20 */
+
+    /* Z-Index */
+    --dk-z-dropdown: 10;
+    --dk-z-sticky: 20;
+    --dk-z-fixed: 30;
+    --dk-z-modal-backdrop: 40;
+    --dk-z-modal: 50;
+}
+
+/* ==========================================================================
+   Reset & Base Styles
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    font-family: var(--dk-font-sans);
+    font-size: var(--dk-text-base);
+    font-weight: var(--dk-font-normal);
+    line-height: var(--dk-leading-normal);
+    color: var(--dk-text-primary);
+    background-color: var(--dk-bg-white);
+}
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--dk-font-serif);
+    font-weight: var(--dk-font-medium);
+    line-height: var(--dk-leading-tight);
+    color: var(--dk-text-primary);
+}
+
+h1 {
+    font-size: var(--dk-text-5xl);
+}
+
+h2 {
+    font-size: var(--dk-text-4xl);
+}
+
+h3 {
+    font-size: var(--dk-text-2xl);
+}
+
+h4 {
+    font-size: var(--dk-text-xl);
+}
+
+h5 {
+    font-size: var(--dk-text-lg);
+}
+
+h6 {
+    font-size: var(--dk-text-base);
+}
+
+p {
+    margin-bottom: var(--dk-space-4);
+}
+
+a {
+    color: var(--dk-gold);
+    text-decoration: none;
+    transition: color var(--dk-transition-fast);
+}
+
+a:hover {
+    color: var(--dk-gold-hover);
+}
+
+/* ==========================================================================
+   Container & Layout
+   ========================================================================== */
+
+.dk-container {
+    max-width: var(--dk-container-max);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--dk-container-padding);
+    padding-right: var(--dk-container-padding);
+}
+
+@media (min-width: 1024px) {
+    .dk-container {
+        padding-left: var(--dk-container-padding-lg);
+        padding-right: var(--dk-container-padding-lg);
+    }
+}
+
+.dk-section {
+    padding-top: var(--dk-space-12);
+    padding-bottom: var(--dk-space-12);
+}
+
+@media (min-width: 1024px) {
+    .dk-section {
+        padding-top: var(--dk-space-20);
+        padding-bottom: var(--dk-space-20);
+    }
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.dk-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--dk-space-2);
+    font-family: var(--dk-font-sans);
+    font-size: var(--dk-text-base);
+    font-weight: var(--dk-font-medium);
+    line-height: 1;
+    padding: var(--dk-space-3) var(--dk-space-6);
+    border-radius: var(--dk-rounded-lg);
+    border: none;
+    cursor: pointer;
+    transition: all var(--dk-transition-fast);
+    text-decoration: none;
+}
+
+.dk-btn-primary {
+    background-color: var(--dk-gold);
+    color: var(--dk-bg-white);
+}
+
+.dk-btn-primary:hover {
+    background-color: var(--dk-gold-hover);
+    color: var(--dk-bg-white);
+}
+
+.dk-btn-secondary {
+    background-color: var(--dk-bg-white);
+    color: var(--dk-gold);
+    border: 1px solid var(--dk-gold);
+}
+
+.dk-btn-secondary:hover {
+    background-color: var(--dk-gold-bg);
+    color: var(--dk-gold);
+}
+
+.dk-btn-outline {
+    background-color: transparent;
+    color: var(--dk-text-primary);
+    border: 1px solid var(--dk-border);
+}
+
+.dk-btn-outline:hover {
+    border-color: var(--dk-gold);
+    color: var(--dk-gold);
+}
+
+.dk-btn-lg {
+    padding: var(--dk-space-4) var(--dk-space-8);
+    font-size: var(--dk-text-lg);
+}
+
+.dk-btn-sm {
+    padding: var(--dk-space-2) var(--dk-space-4);
+    font-size: var(--dk-text-sm);
+}
+
+/* ==========================================================================
+   Cards
+   ========================================================================== */
+
+.dk-card {
+    background-color: var(--dk-bg-white);
+    border: 1px solid var(--dk-border-light);
+    border-radius: var(--dk-rounded-2xl);
+    overflow: hidden;
+    transition: box-shadow var(--dk-transition-slow);
+}
+
+.dk-card:hover {
+    box-shadow: var(--dk-shadow-xl);
+}
+
+.dk-card-body {
+    padding: var(--dk-space-6);
+}
+
+/* ==========================================================================
+   Badges
+   ========================================================================== */
+
+.dk-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--dk-space-2);
+    padding: var(--dk-space-1) var(--dk-space-3);
+    border-radius: var(--dk-rounded-full);
+    font-size: var(--dk-text-xs);
+    font-weight: var(--dk-font-medium);
+}
+
+.dk-badge-gold {
+    background-color: var(--dk-gold-light);
+    color: var(--dk-gold);
+}
+
+.dk-badge-white {
+    background-color: var(--dk-bg-white);
+    color: var(--dk-text-primary);
+    border: 1px solid var(--dk-border-light);
+    box-shadow: var(--dk-shadow-sm);
+}
+
+/* ==========================================================================
+   Forms
+   ========================================================================== */
+
+.dk-input {
+    width: 100%;
+    padding: var(--dk-space-3) var(--dk-space-4);
+    font-family: var(--dk-font-sans);
+    font-size: var(--dk-text-base);
+    color: var(--dk-text-primary);
+    background-color: var(--dk-bg-white);
+    border: 1px solid var(--dk-border);
+    border-radius: var(--dk-rounded-lg);
+    transition: border-color var(--dk-transition-fast), box-shadow var(--dk-transition-fast);
+}
+
+.dk-input::placeholder {
+    color: var(--dk-text-muted);
+}
+
+.dk-input:focus {
+    outline: none;
+    border-color: var(--dk-gold);
+    box-shadow: 0 0 0 3px var(--dk-gold-light);
+}
+
+.dk-input-search {
+    padding-left: var(--dk-space-10);
+    background-color: var(--dk-gray-50);
+}
+
+.dk-label {
+    display: block;
+    font-size: var(--dk-text-sm);
+    font-weight: var(--dk-font-medium);
+    color: var(--dk-text-secondary);
+    margin-bottom: var(--dk-space-2);
+}
+
+/* ==========================================================================
+   Grid System
+   ========================================================================== */
+
+.dk-grid {
+    display: grid;
+    gap: var(--dk-space-6);
+}
+
+.dk-grid-2 {
+    grid-template-columns: repeat(1, 1fr);
+}
+
+.dk-grid-3 {
+    grid-template-columns: repeat(1, 1fr);
+}
+
+.dk-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 640px) {
+    .dk-grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dk-grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dk-grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .dk-grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .dk-grid-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+.dk-text-center {
+    text-align: center;
+}
+
+.dk-text-gold {
+    color: var(--dk-gold);
+}
+
+.dk-text-muted {
+    color: var(--dk-text-muted);
+}
+
+.dk-bg-gray {
+    background-color: var(--dk-gray-50);
+}
+
+.dk-bg-dark {
+    background-color: var(--dk-dark-bg);
+}
+
+.dk-bg-footer {
+    background-color: var(--dk-dark);
+}
+
+.dk-mb-4 {
+    margin-bottom: var(--dk-space-4);
+}
+
+.dk-mb-6 {
+    margin-bottom: var(--dk-space-6);
+}
+
+.dk-mb-8 {
+    margin-bottom: var(--dk-space-8);
+}
+
+.dk-mb-12 {
+    margin-bottom: var(--dk-space-12);
+}
+
+/* ==========================================================================
+   Elementor Compatibility
+   ========================================================================== */
+
+.elementor-section.elementor-section-boxed > .elementor-container {
+    max-width: var(--dk-container-max);
+}
+
+.elementor-widget-heading .elementor-heading-title {
+    font-family: var(--dk-font-serif);
+}
+
+.elementor-widget-text-editor {
+    font-family: var(--dk-font-sans);
+}
+
+/* Override Elementor buttons to match theme */
+.elementor-button {
+    font-family: var(--dk-font-sans) !important;
+    border-radius: var(--dk-rounded-lg) !important;
+}
+
+.elementor-button-wrapper .elementor-button.elementor-size-md {
+    padding: var(--dk-space-3) var(--dk-space-6);
+}
+
+/* ==========================================================================
+   WooCommerce Overrides
+   ========================================================================== */
+
+.woocommerce .button,
+.woocommerce-page .button,
+.woocommerce input.button,
+.woocommerce a.button {
+    font-family: var(--dk-font-sans);
+    font-weight: var(--dk-font-medium);
+    background-color: var(--dk-gold);
+    color: var(--dk-bg-white);
+    border-radius: var(--dk-rounded-lg);
+    padding: var(--dk-space-3) var(--dk-space-6);
+    transition: background-color var(--dk-transition-fast);
+}
+
+.woocommerce .button:hover,
+.woocommerce-page .button:hover,
+.woocommerce input.button:hover,
+.woocommerce a.button:hover {
+    background-color: var(--dk-gold-hover);
+    color: var(--dk-bg-white);
+}
+
+.woocommerce .button.alt,
+.woocommerce-page .button.alt {
+    background-color: var(--dk-gold);
+}
+
+.woocommerce .button.alt:hover,
+.woocommerce-page .button.alt:hover {
+    background-color: var(--dk-gold-hover);
+}
+
+/* Product Cards */
+.woocommerce ul.products li.product {
+    background-color: var(--dk-bg-white);
+    border: 1px solid var(--dk-border-light);
+    border-radius: var(--dk-rounded-2xl);
+    overflow: hidden;
+    transition: box-shadow var(--dk-transition-slow);
+}
+
+.woocommerce ul.products li.product:hover {
+    box-shadow: var(--dk-shadow-xl);
+}
+
+.woocommerce ul.products li.product .woocommerce-loop-product__title {
+    font-family: var(--dk-font-serif);
+    color: var(--dk-text-primary);
+    font-size: var(--dk-text-lg);
+}
+
+.woocommerce ul.products li.product .price {
+    font-family: var(--dk-font-sans);
+    color: var(--dk-text-primary);
+    font-size: var(--dk-text-2xl);
+}
+
+/* Star Rating */
+.woocommerce .star-rating span::before,
+.woocommerce .star-rating::before {
+    color: var(--dk-gold);
+}
+
+/* Messages */
+.woocommerce-message,
+.woocommerce-info {
+    border-top-color: var(--dk-gold);
+}
+
+.woocommerce-message::before,
+.woocommerce-info::before {
+    color: var(--dk-gold);
+}
+
+/* Forms */
+.woocommerce form .form-row input.input-text,
+.woocommerce form .form-row textarea {
+    border: 1px solid var(--dk-border);
+    border-radius: var(--dk-rounded-lg);
+    padding: var(--dk-space-3) var(--dk-space-4);
+}
+
+.woocommerce form .form-row input.input-text:focus,
+.woocommerce form .form-row textarea:focus {
+    border-color: var(--dk-gold);
+    box-shadow: 0 0 0 3px var(--dk-gold-light);
+}
+
+/* Checkout */
+.woocommerce-checkout #payment {
+    background-color: var(--dk-gray-50);
+    border-radius: var(--dk-rounded-2xl);
+}
+
+.woocommerce-checkout #payment div.payment_box {
+    background-color: var(--dk-bg-white);
+}
+
+/* ==========================================================================
+   Animations
+   ========================================================================== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.dk-animate-fade-in {
+    animation: fadeIn var(--dk-transition-slow) ease-out;
+}
+
+.dk-animate-slide-up {
+    animation: slideUp var(--dk-transition-slow) ease-out;
+}
+
+.dk-animate-scale-in {
+    animation: scaleIn var(--dk-transition-slow) ease-out;
+}
+
+/* Hover animations */
+.dk-hover-scale {
+    transition: transform var(--dk-transition-slower);
+}
+
+.dk-hover-scale:hover {
+    transform: scale(1.05);
+}
+
+.dk-hover-lift {
+    transition: transform var(--dk-transition), box-shadow var(--dk-transition);
+}
+
+.dk-hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--dk-shadow-lg);
+}
+
+/* ==========================================================================
+   Responsive Utilities
+   ========================================================================== */
+
+@media (max-width: 1023px) {
+    .dk-hide-mobile {
+        display: none !important;
+    }
+}
+
+@media (min-width: 1024px) {
+    .dk-hide-desktop {
+        display: none !important;
+    }
+}
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
+
+@media print {
+    .dk-no-print {
+        display: none !important;
+    }
+}

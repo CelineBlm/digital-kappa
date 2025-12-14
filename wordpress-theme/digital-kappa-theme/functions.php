@@ -1061,3 +1061,93 @@ if (class_exists('WooCommerce')) {
 if (did_action('elementor/loaded')) {
     require_once DK_THEME_DIR . '/inc/elementor-widgets.php';
 }
+
+/**
+ * ==========================================================================
+ * Live Search AJAX Handler
+ * ==========================================================================
+ */
+
+// Enqueue AJAX URL for JavaScript
+function dk_enqueue_ajax_scripts() {
+    wp_localize_script('dk-main', 'dk_ajax', array(
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('dk_live_search_nonce')
+    ));
+}
+add_action('wp_enqueue_scripts', 'dk_enqueue_ajax_scripts');
+
+// Live search AJAX handler
+function dk_live_search() {
+    $search_query = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
+
+    if (empty($search_query) || strlen($search_query) < 2) {
+        wp_send_json_success(array('products' => array()));
+        return;
+    }
+
+    $products = array();
+
+    // Check if WooCommerce is active
+    if (class_exists('WooCommerce')) {
+        $args = array(
+            'post_type' => 'product',
+            'post_status' => 'publish',
+            's' => $search_query,
+            'posts_per_page' => 6,
+        );
+
+        $query = new WP_Query($args);
+
+        if ($query->have_posts()) {
+            while ($query->have_posts()) {
+                $query->the_post();
+                global $product;
+
+                $product = wc_get_product(get_the_ID());
+                if (!$product) continue;
+
+                $image_id = $product->get_image_id();
+                $image_url = $image_id ? wp_get_attachment_image_url($image_id, 'thumbnail') : wc_placeholder_img_src('thumbnail');
+
+                $products[] = array(
+                    'id' => $product->get_id(),
+                    'title' => $product->get_name(),
+                    'url' => get_permalink($product->get_id()),
+                    'price' => $product->get_price_html(),
+                    'image' => $image_url,
+                );
+            }
+            wp_reset_postdata();
+        }
+    } else {
+        // Fallback for posts if WooCommerce is not active
+        $args = array(
+            'post_type' => 'post',
+            'post_status' => 'publish',
+            's' => $search_query,
+            'posts_per_page' => 6,
+        );
+
+        $query = new WP_Query($args);
+
+        if ($query->have_posts()) {
+            while ($query->have_posts()) {
+                $query->the_post();
+
+                $products[] = array(
+                    'id' => get_the_ID(),
+                    'title' => get_the_title(),
+                    'url' => get_permalink(),
+                    'price' => '',
+                    'image' => get_the_post_thumbnail_url(get_the_ID(), 'thumbnail') ?: '',
+                );
+            }
+            wp_reset_postdata();
+        }
+    }
+
+    wp_send_json_success(array('products' => $products));
+}
+add_action('wp_ajax_dk_live_search', 'dk_live_search');
+add_action('wp_ajax_nopriv_dk_live_search', 'dk_live_search');
